@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Application\Handlers\HttpErrorHandler;
 use App\Application\Handlers\ShutdownHandler;
+use App\Application\Middleware\SessionMiddleware;
 use App\Application\ResponseEmitter\ResponseEmitter;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
@@ -63,8 +64,11 @@ register_shutdown_function($shutdownHandler);
 // Add Routing Middleware
 $app->addRoutingMiddleware();
 
+// Add Session Middleware
+$app->add(new SessionMiddleware());
+
 // Add Error Middleware
-$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, false, false);
+$errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);
 $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 // Run App & Emit Response

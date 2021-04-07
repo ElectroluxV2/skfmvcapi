@@ -8,17 +8,20 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface as Middleware;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
-class SessionMiddleware implements Middleware
-{
+class SessionMiddleware implements Middleware {
     /**
      * {@inheritdoc}
      */
-    public function process(Request $request, RequestHandler $handler): Response
-    {
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    public function process(Request $request, RequestHandler $handler): Response {
+        if (session_status() === PHP_SESSION_NONE) {
             session_start();
-            $request = $request->withAttribute('session', $_SESSION);
         }
+
+        if (!isset($_SESSION['authorized'])) {
+            $_SESSION['authorized'] = false;
+        }
+
+        $request = $request->withAttribute('session', $_SESSION);
 
         return $handler->handle($request);
     }

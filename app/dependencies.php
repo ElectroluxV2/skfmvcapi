@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use DI\ContainerBuilder;
+use Google\Authenticator\GoogleAuthenticator;
+use Medoo\Medoo;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
@@ -23,6 +25,11 @@ return function (ContainerBuilder $containerBuilder) {
             $logger->pushHandler($handler);
 
             return $logger;
-        },
+        }, Medoo::class => function (ContainerInterface $c) {
+            $settings = $c->get('settings');
+            return new Medoo($settings['medoo']);
+        }, GoogleAuthenticator::class => function () {
+            return new GoogleAuthenticator();
+        }
     ]);
 };

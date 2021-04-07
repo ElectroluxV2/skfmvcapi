@@ -10,12 +10,11 @@ class ListUsersAction extends UserAction
     /**
      * {@inheritdoc}
      */
-    protected function action(): Response
-    {
-        $users = $this->userRepository->findAll();
+    protected function action(): Response {
+        session_unset();
 
         $this->logger->info("Users list was viewed.");
 
-        return $this->respondWithData($users);
+        return $this->respondWithData(['aaaa']);
     }
 }

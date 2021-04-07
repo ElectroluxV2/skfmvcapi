@@ -17,13 +17,11 @@ use Slim\Exception\HttpUnauthorizedException;
 use Slim\Handlers\ErrorHandler as SlimErrorHandler;
 use Throwable;
 
-class HttpErrorHandler extends SlimErrorHandler
-{
+class HttpErrorHandler extends SlimErrorHandler {
     /**
      * @inheritdoc
      */
-    protected function respond(): Response
-    {
+    protected function respond(): Response {
         $exception = $this->exception;
         $statusCode = 500;
         $error = new ActionError(

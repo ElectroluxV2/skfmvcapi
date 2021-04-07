@@ -5,22 +5,21 @@ namespace App\Application\Actions;
 
 use JsonSerializable;
 
-class ActionPayload implements JsonSerializable
-{
+class ActionPayload implements JsonSerializable {
     /**
      * @var int
      */
-    private $statusCode;
+    private int $statusCode;
 
     /**
      * @var array|object|null
      */
-    private $data;
+    private object | null | array $data;
 
     /**
      * @var ActionError|null
      */
-    private $error;
+    private ?ActionError $error;
 
     /**
      * @param int                   $statusCode
@@ -40,32 +39,28 @@ class ActionPayload implements JsonSerializable
     /**
      * @return int
      */
-    public function getStatusCode(): int
-    {
+    public function getStatusCode(): int {
         return $this->statusCode;
     }
 
     /**
      * @return array|null|object
      */
-    public function getData()
-    {
+    public function getData(): object | array | null {
         return $this->data;
     }
 
     /**
      * @return ActionError|null
      */
-    public function getError(): ?ActionError
-    {
+    public function getError(): ?ActionError {
         return $this->error;
     }
 
     /**
      * @return array
      */
-    public function jsonSerialize()
-    {
+    public function jsonSerialize(): array {
         $payload = [
             'statusCode' => $this->statusCode,
         ];

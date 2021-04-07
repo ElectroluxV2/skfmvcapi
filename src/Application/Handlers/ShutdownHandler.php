@@ -7,22 +7,21 @@ use App\Application\ResponseEmitter\ResponseEmitter;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Exception\HttpInternalServerErrorException;
 
-class ShutdownHandler
-{
+class ShutdownHandler {
     /**
      * @var Request
      */
-    private $request;
+    private Request $request;
 
     /**
      * @var HttpErrorHandler
      */
-    private $errorHandler;
+    private HttpErrorHandler $errorHandler;
 
     /**
      * @var bool
      */
-    private $displayErrorDetails;
+    private bool $displayErrorDetails;
 
     /**
      * ShutdownHandler constructor.
@@ -41,8 +40,7 @@ class ShutdownHandler
         $this->displayErrorDetails = $displayErrorDetails;
     }
 
-    public function __invoke()
-    {
+    public function __invoke() {
         $error = error_get_last();
         if ($error) {
             $errorFile = $error['file'];
