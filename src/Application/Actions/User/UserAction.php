@@ -7,7 +7,6 @@ use App\Application\Actions\Action;
 use App\Domain\User\UserRepository;
 use Psr\Log\LoggerInterface;
 
-abstract class UserAction extends Action
-{
+abstract class UserAction extends Action {
 
 }

@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Slim\Exception\HttpBadRequestException;
 
-class AuthenticatorAction extends Action {
+class AuthenticateAction extends Action {
 
     private GoogleAuthenticator $authenticator;
 
@@ -27,8 +27,7 @@ class AuthenticatorAction extends Action {
      * @throws AuthorizationException
      */
     protected function action(): Response {
-        // TODO: Implement action() method.
-
+        // Do not double verify
         if ($_SESSION['authorized'] === true) {
             return $this->respondWithData([
                 'authorized' => true,
@@ -41,6 +40,14 @@ class AuthenticatorAction extends Action {
         }
 
         $code = $_REQUEST['code'];
+
+        if (!is_numeric($code)) {
+            throw new AuthorizationException('Code must be numeric!');
+        }
+
+        if (strlen($code) !== 6) {
+            throw new AuthorizationException('Code must be 6 digits length!');
+        }
 
         $possibleSecrets = $this->medoo->select('authenticator_secrets', [
             '[><]users' => [

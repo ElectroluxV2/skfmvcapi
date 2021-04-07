@@ -47,7 +47,7 @@ class TestAction extends Action {
         $this->medoo->create('authenticator_secrets', [
             'user_id' => [
                 'integer',
-                'references users(id)'
+                'references users (id)'
             ],
             'value' => [
                 'varchar (16)',
