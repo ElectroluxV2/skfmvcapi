@@ -5,20 +5,18 @@ namespace App\Application\Actions\Test;
 
 
 use App\Application\Actions\Action;
-use App\Domain\DomainException\DomainRecordNotFoundException;
-use DateTime;
 use Google\Authenticator\GoogleAuthenticator;
 use Google\Authenticator\GoogleQrUrl;
+use JetBrains\PhpStorm\Pure;
 use Medoo\Medoo;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
-use Slim\Exception\HttpBadRequestException;
 
 class TestAction extends Action {
 
     private GoogleAuthenticator $authenticator;
 
-    public function __construct(LoggerInterface $logger, Medoo $medoo, GoogleAuthenticator $authenticator) {
+    #[Pure] public function __construct(LoggerInterface $logger, Medoo $medoo, GoogleAuthenticator $authenticator) {
         parent::__construct($logger, $medoo);
         $this->authenticator = $authenticator;
     }

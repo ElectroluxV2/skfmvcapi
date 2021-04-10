@@ -1,26 +1,11 @@
-<?php
+<?php declare(strict_types=1);
+namespace App\Application\Actions\Authenticate;
 
-
-namespace App\Application\Actions\Test;
-
-
-use App\Application\Actions\Action;
 use App\Domain\DomainException\AuthorizationException;
-use App\Domain\DomainException\DomainRecordNotFoundException;
-use Google\Authenticator\GoogleAuthenticator;
-use Medoo\Medoo;
+use DateTime;
 use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Log\LoggerInterface;
-use Slim\Exception\HttpBadRequestException;
 
-class AuthenticateAction extends Action {
-
-    private GoogleAuthenticator $authenticator;
-
-    public function __construct(LoggerInterface $logger, Medoo $medoo, GoogleAuthenticator $authenticator) {
-        parent::__construct($logger, $medoo);
-        $this->authenticator = $authenticator;
-    }
+class LoginAction extends AuthenticateAction {
 
     /**
      * @inheritDoc
@@ -54,18 +39,31 @@ class AuthenticateAction extends Action {
                 'user_id' => 'id'
             ]
         ], [
+            'user_id',
             'given_name',
             'family_name',
+            'permission_level',
             'value'
         ]);
 
+        // TODO: prevent logging into someones other account
         foreach ($possibleSecrets as $secretArray) {
             if ($this->authenticator->checkCode($secretArray['value'], $code)) {
                 $_SESSION['authorized'] = true;
                 $_SESSION['user'] = [
+                    'id' => $secretArray['user_id'],
                     'given_name' => $secretArray['given_name'],
-                    'family_name' => $secretArray['family_name']
+                    'family_name' => $secretArray['family_name'],
+                    'permission_level' => $secretArray['permission_level']
                 ];
+
+                // Update last active
+                $now = new DateTime();
+                $this->medoo->update('authenticator_secrets', [
+                    'last_active' => $now->format('Y-m-d H:i:s')
+                ], [
+                    'value' => $secretArray['value']
+                ]);
 
                 return $this->respondWithData([
                     'authorized' => $_SESSION['authorized'],
@@ -74,8 +72,7 @@ class AuthenticateAction extends Action {
             }
         }
 
-        return $this->respondWithData([
-            'authorized' => false,
-        ]);
+        // No matches
+        throw new AuthorizationException('Invalid data!');
     }
 }
