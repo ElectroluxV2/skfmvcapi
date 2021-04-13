@@ -20,11 +20,13 @@ class LoginAction extends AuthenticateAction {
             ]);
         }
 
-        if (empty($_REQUEST['code'])) {
+        $data = $this->request->getParsedBody();
+
+        if (empty($data['code'])) {
             throw new AuthorizationException('Missing code property!');
         }
 
-        $code = $_REQUEST['code'];
+        $code = $data['code'];
 
         if (!is_numeric($code)) {
             throw new AuthorizationException('Code must be numeric!');
@@ -42,7 +44,6 @@ class LoginAction extends AuthenticateAction {
             'user_id',
             'given_name',
             'family_name',
-            'permission_level',
             'value'
         ]);
 
@@ -53,9 +54,25 @@ class LoginAction extends AuthenticateAction {
                 $_SESSION['user'] = [
                     'id' => $secretArray['user_id'],
                     'given_name' => $secretArray['given_name'],
-                    'family_name' => $secretArray['family_name'],
-                    'permission_level' => $secretArray['permission_level']
+                    'family_name' => $secretArray['family_name']
                 ];
+
+                // Get permissions
+                $permissions = $this->medoo->select('permission_types', [
+                    '[>]user_permission' => [
+                        'id' => 'permission_id'
+                    ],
+                    '[>]users' => [
+                        'user_permission.user_id' => 'id'
+                    ]
+                ], [
+                    'permission_types.name',
+                    'permission_types.id'
+                ], [
+                    'users.id' => 1
+                ]);
+
+                $_SESSION['user']['permissions'] = $permissions;
 
                 // Update last active
                 $now = new DateTime();

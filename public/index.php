@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Application\Handlers\HttpErrorHandler;
 use App\Application\Handlers\ShutdownHandler;
+use App\Application\Middleware\CORSMiddleware;
 use App\Application\Middleware\SessionMiddleware;
 use App\Application\ResponseEmitter\ResponseEmitter;
 use DI\ContainerBuilder;
@@ -61,14 +62,17 @@ $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
 register_shutdown_function($shutdownHandler);
 
+// Add Session Middleware
+$app->add(new SessionMiddleware());
+
 // Body parsing (POST, GET, JSON)
 $app->addBodyParsingMiddleware();
 
 // Add Routing Middleware
 $app->addRoutingMiddleware();
 
-// Add Session Middleware
-$app->add(new SessionMiddleware());
+// Enable cors
+$app->add(new CORSMiddleware());
 
 // Add Error Middleware
 $errorMiddleware = $app->addErrorMiddleware($displayErrorDetails, true, true);

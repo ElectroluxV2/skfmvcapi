@@ -25,52 +25,21 @@ class TestAction extends Action {
      * @inheritDoc
      */
     protected function action(): Response {
-        // TODO: Implement action() method.
-
-        $this->medoo->create('users', [
-            'id' => [
-               'serial',
-               'primary key'
+        $permissions = $this->medoo->select('permission_types', [
+            '[>]user_permission' => [
+                'id' => 'permission_id'
             ],
-            'given_name' => [
-                'varchar (255)',
-                'not null'
-            ],
-            'family_name' => [
-                'varchar (255)',
-                'not null'
+            '[>]users' => [
+                'user_permission.user_id' => 'id'
             ]
+        ], [
+            'permission_types.name',
+            'permission_types.id'
+        ], [
+            'users.id' => 1
         ]);
 
-        $this->medoo->create('authenticator_secrets', [
-            'user_id' => [
-                'integer',
-                'references users (id)'
-            ],
-            'value' => [
-                'varchar (16)',
-                'unique',
-                'not null'
-            ]
-        ]);
+        return $this->respondWithData(['perms' => $permissions]);
 
-        /*$this->medoo->insert('users', [
-           'given_name' => 'Paweł',
-           'family_name' => 'Tarnawski'
-        ]);*/
-
-        $secret = $this->authenticator->generateSecret();
-
-        $this->medoo->insert('authenticator_secrets', [
-            'user_id' => '5',
-            'value' => $secret,
-        ]);
-
-        $url = GoogleQrUrl::generate('Paweł Tarnawski', $secret, 'openskiff.pl');
-
-        return $this->respondWithData([
-            'secret' => $secret,
-            'url' => $url
-        ]);
     }
 }

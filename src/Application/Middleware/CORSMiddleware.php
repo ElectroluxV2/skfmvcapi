@@ -1,26 +1,17 @@
-<?php
-
-
+<?php declare(strict_types=1);
 namespace App\Application\Middleware;
 
-
-use App\Domain\DomainException\AuthorizationException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class AuthenticatorMiddleware implements MiddlewareInterface {
+class CORSMiddleware implements MiddlewareInterface {
 
     /**
      * @inheritDoc
-     * @throws AuthorizationException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
-        if ($request->getAttribute('session')['authorized'] !== true) {
-            throw new AuthorizationException('Not authorized!');
-        }
-
-        return $handler->handle($request);
+        return $handler->handle($request)->withHeader('Access-Control-Allow-Origin', 'localhost:4200');
     }
 }

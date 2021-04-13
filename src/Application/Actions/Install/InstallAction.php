@@ -33,7 +33,7 @@ class InstallAction extends AuthenticateAction {
         $this->medoo->create('users', [
             'id' => [
                 'serial',
-                'primary key'
+                'primary key',
             ],
             'given_name' => [
                 'varchar (255)',
@@ -43,9 +43,8 @@ class InstallAction extends AuthenticateAction {
                 'varchar (255)',
                 'not null'
             ],
-            'permission_level' => [
-                'integer',
-                'DEFAULT 0'
+            'email' => [
+                'varchar (512)'
             ]
         ]);
 
@@ -55,8 +54,8 @@ class InstallAction extends AuthenticateAction {
                 'primary key'
             ],
             'user_id' => [
-                'integer',
-                'references users (id)'
+                'int',
+                'references users (id) on delete cascade'
             ],
             'value' => [
                 'varchar (16)',
@@ -69,16 +68,46 @@ class InstallAction extends AuthenticateAction {
             'created' => [
                 'timestamp',
                 'not null',
-                'DEFAULT NOW()'
+                'default NOW()'
             ]
         ]);
 
+        $this->medoo->create('permission_types', [
+            'id' => [
+                'serial',
+                'primary key'
+            ],
+            'name' => [
+                'varchar (255)',
+                'unique'
+            ]
+        ]);
+
+        $this->medoo->create('user_permission', [
+            'user_id' => [
+                'int',
+               'references users (id) on delete cascade'
+           ],
+            'permission_id' => [
+                'int',
+                'references permission_types (id) on delete cascade'
+           ]
+        ]);
+
         // Check if there is admin user
+        // select users.given_name, users.family_name from users, permission_types where name = * limit 1
         $adminUser = $this->medoo->get('users', [
-            'given_name',
-            'family_name'
+            '[>]user_permission' => [
+                'id' => 'user_id'
+            ],
+            '[>]permission_types' => [
+               'user_permission.permission_id' => 'id'
+           ]
+        ],[
+            'users.family_name',
+            'users.given_name',
         ], [
-           'permission_level[>=]' => 100
+            'permission_types.name' => '*'
         ]);
 
         $this->logger->info('Admin user: ', ['$adminUser' => $adminUser]);
@@ -99,15 +128,36 @@ class InstallAction extends AuthenticateAction {
         $this->medoo->insert('users', [
             'given_name' => 'Master',
             'family_name' => 'Admin',
-            'permission_level' => 100
+        ]);
+
+        $adminUserId = $this->medoo->id();
+
+        // Create master permission
+        $this->medoo->insert('permission_types', [
+            'name' => '*'
+        ]);
+
+        $masterPermissionId = $this->medoo->id();
+
+        // Add other permissions
+        $permissions = ['MANAGE_USER_OTHERS'];
+        foreach ($permissions as $permission) {
+            $this->medoo->insert('permission_types', [
+                'name' => $permission
+            ]);
+        }
+
+        // Assign permission to master admin
+        $this->medoo->insert('user_permission', [
+            'user_id' => $adminUserId,
+            'permission_id' => $masterPermissionId
         ]);
 
         // Generate secret for admin
-        $adminId = $this->medoo->id();
         $secret = $this->authenticator->generateSecret();
 
         $this->medoo->insert('authenticator_secrets', [
-            'user_id' => $adminId,
+            'user_id' => $adminUserId,
             'value' => $secret,
         ]);
 

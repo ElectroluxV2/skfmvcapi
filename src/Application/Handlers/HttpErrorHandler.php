@@ -49,7 +49,7 @@ class HttpErrorHandler extends SlimErrorHandler {
             }
         } elseif ($exception instanceof AuthorizationException) {
             $error->setType('AUTHORIZATION_ERROR');
-            $statusCode = 401;
+            $statusCode = 200;
         }
 
         if (
